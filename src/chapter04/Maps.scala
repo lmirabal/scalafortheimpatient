@@ -49,4 +49,26 @@ object Maps extends App{
     "Saturday" -> SATURDAY,
     "Sunday" -> SUNDAY)
   println("6. Days = " + days)
+
+  import scala.collection.JavaConversions.propertiesAsScalaMap
+  var properties: mutable.Map[String, String] = System.getProperties
+  //var maxLength = properties.keySet.maxBy(_.length).length
+  var maxLength = properties.map(_._1.length).max
+  println("7. System properties:")
+  properties.foreach (p => printf("%s %s | %s %n", p._1, " " * (maxLength - p._1.length), p._2))
+
+  def minmax(values: Array[Int]) = {
+    (values.min, values.max)
+  }
+  val values = Array(21,43,87,10,-23,-11)
+  val minmaxTuple = minmax(values)
+  printf("8. values = %s min = %d max = %d %n", values.toList, minmaxTuple._1, minmaxTuple._2)
+
+  def lteqgt(values: Array[Int], v: Int) = {
+    (values.filter(_ < v).size, values.filter(_ == v).size, values.filter(_ > v).size)
+  }
+  val lteqgtTuple = lteqgt(values, 10)
+  printf("9. values = %s lt = %d eq = %d gt = %d %n", values.toList, lteqgtTuple._1, lteqgtTuple._2, lteqgtTuple._3)
+
+  println("10. " + "Hello".zip("World"))
 }
