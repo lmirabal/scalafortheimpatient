@@ -16,7 +16,7 @@ object Classes extends App {
 
     def increment() { if(value < Int.MaxValue) value += 1 }
   }
-  var counter = new Counter
+  val counter = new Counter
   printf("1. current = " + counter.current)
   for(i <- 0 to increments) { counter.increment();  print(" increment = " + counter.current) }
   println()
@@ -28,12 +28,12 @@ object Classes extends App {
     def withdraw(amount: Double) { currentBalance -= amount }
     def balance = currentBalance //TODO: There must be a better way to do this
   }
-  var account = new BankAccount(1000)
+  val account = new BankAccount(1000)
   print("2. opening balance = " + account.balance)
-  var depositAmount = 5500.55
+  val depositAmount = 5500.55
   account.deposit(depositAmount)
   printf(" [deposit = £%.2f new balance = £%.2f]", depositAmount, account.balance)
-  var withdrawalAmount = 3333.25
+  val withdrawalAmount = 3333.25
   account.withdraw(withdrawalAmount)
   printf(" [withdraw = £%.2f new balance = £%.2f] %n", withdrawalAmount, account.balance)
 
@@ -90,9 +90,58 @@ object Classes extends App {
   printf("4. %s < %s = %b %n", time8, time7, time8.before(time7))
 
   class Student(@BeanProperty var name: String, @BeanProperty var id: Long)
-  var student1 = new Student("Linus", 1)
-  var student2 = new Student("Richard", 2)
+  val student1 = new Student("Linus", 1)
+  val student2 = new Student("Richard", 2)
   printf("5. Student: name = %s id = %d %n", student1.getName, student1.getId)
   printf("5. Student: name = %s id = %d %n", student2.name, student2.id)
   //You can but you should not, as they exist only for java compatibility
+
+  class Person(_age: Int) {
+    val age = if(_age > 0) _age else 0
+  }
+  val person1 = new Person(29)
+  val person2 = new Person(-10)
+  println("6. person age = " + person1.age)
+  println("6. person age = " + person2.age)
+
+  //It's better to use a plain parameter as we don't want to keep the full name as String
+  class NamedPerson(_fullName: String) {
+    private val fullName = _fullName.split(" ")
+    val firstName = fullName(0)
+    val lastName = fullName(1)
+  }
+  val person3 = new NamedPerson("Luis Mirabal")
+  printf("7. first name = %s last name = %s %n", person3.firstName, person3.lastName)
+
+  //The more general constructor is primary as it can be called by any other constructor with any combination of values
+  class Car(val manufacturer: String, val modelName: String, val modelYear: Int, var licensePlate: String) {
+    def this(manufacturer: String, modelName: String){ this(manufacturer, modelName, -1, "") }
+    def this(manufacturer: String, modelName: String, modelYear: Int){ this(manufacturer, modelName, modelYear, "") }
+    def this(manufacturer: String, modelName: String, licensePlate: String){ this(manufacturer, modelName, -1, licensePlate) }
+
+    override def toString: String = "[manufacturer = %s, model = %s, year = %d, plate = %s]".format(manufacturer, modelName, modelYear, licensePlate)
+  }
+  println("8. " + new Car("Ford", "Focus", 2005, "RV55 ERJ"))
+  println("8. " + new Car("Volkswagen", "Golf"))
+  println("8. " + new Car("Audi", "A5", 2012))
+  println("8. " + new Car("Porsche", "Cayman", "LF63 GTY"))
+
+  //Far shorter in Scala. 68 lines long in Java
+  println("9. " + new JavaCar("Ford", "Focus", 2005, "RV55 ERJ"))
+  println("9. " + new JavaCar("Volkswagen", "Golf"))
+  println("9. " + new JavaCar("Audi", "A5", 2012))
+  println("9. " + new JavaCar("Porsche", "Cayman", "LF63 GTY"))
+
+  //Default primary constructor and explicit fields
+  class Employee(_name: String = "John Q. Public", _salary: Double = 0.0) {
+    val name: String = _name
+    val salary: Double = _salary
+  }
+  //It's better to use this version as all you need is one constructor and no explicit fields
+  class Employee2(val name: String = "John Q. Public", var salary: Double = 0.0) {
+    override def toString: String = "[name = %s, salary = %.2f]".format(name, salary)
+  }
+  println("10. " + new Employee2("Luis Mirabal", 3000.36))
+  println("10. " + new Employee2(salary = 5500.50))
+  println("10. " + new Employee2)
 }
