@@ -28,8 +28,8 @@ object Inheritance extends App{
   }
   val account = new BankAccount(1000)
   val checkingAccount = new CheckingAccount(1000)
-  printf("1. Account = %s deposit = %s withdrawal = %s %n", account.getClass.getSimpleName, account.deposit(500), account.withdraw(200))
-  printf("1. Account = %s deposit = %s withdrawal = %s %n", checkingAccount.getClass.getSimpleName, checkingAccount.deposit(500), checkingAccount.withdraw(200))
+  println(s"1. Account = ${account.getClass.getSimpleName} deposit = ${account.deposit(500)} withdrawal = ${account.withdraw(200)}")
+  println(s"1. Account = ${checkingAccount.getClass.getSimpleName} deposit = ${checkingAccount.deposit(500)} withdrawal = ${checkingAccount.withdraw(200)}")
 
   class SavingsAccount(initialBalance: Double) extends BankAccount(initialBalance) {
     private val CHARGE = 1
@@ -38,9 +38,10 @@ object Inheritance extends App{
 
     private var transactionCounter = 0
 
-    def earnMonthlyInterest() {
-      balance += balance * INTEREST
+    def earnMonthlyInterest() = {
       transactionCounter = 0
+      balance += balance * INTEREST
+      balance
     }
     override def deposit(amount: Double) = {
       transactionCounter += 1
@@ -52,7 +53,16 @@ object Inheritance extends App{
       super.withdraw(if (transactionCounter <= FREE_TRANSACTIONS) amount else amount + CHARGE)
     }
   }
-  //TODO Client code
+  val savingsAccount = new SavingsAccount(2500)
+  var amount = 500
+  println(s"2. Deposit = $amount Balance = ${savingsAccount.deposit(amount)}")
+  amount = 1100
+  println(s"2. Withdrawal = $amount Balance = ${savingsAccount.withdraw(amount)}")
+  amount = 200
+  println(s"2. Withdrawal = $amount Balance = ${savingsAccount.withdraw(amount)}")
+  amount = 301
+  println(s"2. Deposit = $amount Balance = ${savingsAccount.deposit(amount)}")
+  println(s"2. Balance after monthly interest = ${savingsAccount.earnMonthlyInterest()}")
 
   //TODO 3 to be implemented
 
@@ -61,15 +71,82 @@ object Inheritance extends App{
     def description: String
   }
   class SimpleItem(override val price: Double, override val description: String) extends Item
-  class Bundle extends Item {
-    private val items = collection.mutable.ArrayBuffer[Item]()
+  class Bundle(initialItems: Item*) extends Item {
+    private val items = initialItems.foldLeft(collection.mutable.ArrayBuffer[Item]())((seq, item) => seq += item)
 
-    def addItem(item: Item) { items.append(item) }
+    def addItem(item: Item) { items += item }
 
     def price: Double = items.map(_.price).sum
 
     def description: String = {
-      "Bundle: \n" + items.foreach(item => s"\t ${item.description} \n")
+      s"[${items.map(_.description).mkString(", ")}]"
     }
   }
+  val simpleItem = new SimpleItem(150, "Simple Item")
+  val bundle = new Bundle(simpleItem, new SimpleItem(200, "Another Item"))
+  bundle.addItem(new Bundle(new SimpleItem(50, "Cheap Item"), new SimpleItem(500, "Expensive Item")))
+  println(s"4. Simple item. Price = ${simpleItem.price} Description= ${simpleItem.description}")
+  println(s"4. Bundle. Price = ${bundle.price} Description = ${bundle.description}")
+
+  class Point (val x: Double, val y: Double){
+    override def toString: String = s"($x,$y)"
+  }
+  class LabeledPoint(private val label: String, x: Double, y: Double) extends Point(x, y) {
+    override def toString: String = s"$label: ${super.toString}"
+  }
+  println(s"5. Point = ${new Point(2153.78, 1111.33)}")
+  println(s"5. Labeled point = ${new LabeledPoint("Black Thursday", 1929, 230.07)}")
+
+  abstract class Shape {
+    def centrePoint: Point
+  }
+  class Rectangle(val width: Double, val height: Double) extends Shape {
+    val centrePoint = new Point(width/2, height/2)
+    override def toString: String = s"Rectangle: Centre = $centrePoint Width = $width Height = $height"
+  }
+  class Circle(val x: Double, val y: Double, val radius: Double) extends Shape {
+    val centrePoint = new Point(x,y)
+    override def toString: String = s"Circle: Centre = $centrePoint Radius = $radius"
+  }
+  println(s"6. ${new Rectangle(8,3)} | ${new Circle(3,7,11)}")
+
+  object Point {
+    def apply(x: Int, y: Int) = new Point(x, y)
+  }
+  class Square(corner: Point, width: Int) extends java.awt.Rectangle(corner.x.toInt, corner.y.toInt, width, width) {
+
+    def this(width: Int) { this(Point(0,0), width) }
+
+    def this() { this(0) }
+  }
+  var square = new Square(Point(3,5), 10)
+  println(s"7. Square = $square")
+  square = new Square(10)
+  println(s"7. Square = $square")
+  square = new Square()
+  println(s"7. Square = $square")
+
+  //Definition and output from javap in separate file
+  val person = new SecretAgent("Luis")
+  println(s"8. There are 2 name fields and 2 name getters. Agent name = ${person.name}")
+
+  class Creature {
+//    val range: Int = 10
+    def range: Int = 10
+    val env: Array[Int] = new Array[Int](range)
+  }
+  class DefAnt extends Creature {
+    override def range = 2
+  }
+  class ValAnt extends Creature {
+    override val range = 2
+  }
+  println(s"9. DefAnt = ${new DefAnt().env.length}")
+  println(s"9. ValAnt = ${new ValAnt().env.length}")
+  println("9. Changing range to be def on the base class makes it a method, which is overridable from subclasses")
+  println("9. Using def in the subclass makes it a method, which overrides the parent class")
+  println("9. Using val in the subclass makes it a field, which is not initialised when the base class constructor is called")
+
+  println("10. Protected before the param means the constructor is private")
+  println("10. Protected in the param definition means the field is protected")
 }
