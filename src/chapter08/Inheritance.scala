@@ -1,5 +1,7 @@
 package chapter08
 
+import scala.collection.mutable
+
 /**
  * Date: 21/05/13
  * Time: 22:37
@@ -64,7 +66,47 @@ object Inheritance extends App{
   println(s"2. Deposit = $amount Balance = ${savingsAccount.deposit(amount)}")
   println(s"2. Balance after monthly interest = ${savingsAccount.earnMonthlyInterest()}")
 
-  //TODO 3 to be implemented
+  abstract class Person(val name: String, val address: String) {
+    def printDetails() {
+      print(s"3. Name: $name. Address: $address.")
+    }
+  }
+  class Student(name: String, address: String) extends Person(name, address){
+    var grades = mutable.Map[String,Double]()
+
+    def addCourseGrade(course: String, grade: Double) {
+      grades(course) = grade
+    }
+
+    def averageGrade = grades.values.sum / grades.size
+
+    override def printDetails() {
+      super.printDetails()
+      println(s" Avg: $averageGrade")
+    }
+  }
+  class Teacher(name: String, address: String) extends Person(name, address) {
+    var courses = mutable.Map[String, Int]()
+
+    def addCourse(course: String, year: Int) {
+      courses(course) = year
+    }
+
+    override def printDetails() {
+      super.printDetails()
+      print(" Courses: ")
+      for ((course, year) <- courses) print(s"$course($year). ")
+      println()
+    }
+  }
+  val student = new Student("Luis", "Isleworth")
+  student.addCourseGrade("Development I", 18.55)
+  student.addCourseGrade("Maths II", 20)
+  student.printDetails()
+  val teacher = new Teacher("Randy", "Barquisimeto")
+  teacher.addCourse("Development III", 2005)
+  teacher.addCourse("Development I", 2000)
+  teacher.printDetails()
 
   abstract class Item {
     def price: Double
