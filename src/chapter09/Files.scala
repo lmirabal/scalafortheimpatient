@@ -1,7 +1,7 @@
 package chapter09
 
 import scala.io.Source
-import java.io.PrintWriter
+import java.io._
 
 /**
  * Date: 28/05/13
@@ -60,6 +60,54 @@ object Files extends App{
   writer.close()
   printOutput(5)
 
+  using (Source.fromFile("src/chapter09/StringsJava.java")) { source =>
+    for (string <- """"(\\"|.)*?"""".r.findAllIn(source.mkString)) println("6. " + string)
+  }
+
+  //TODO Fix regex
+  using (Source.fromFile("resources/numbersletters.txt")) { source =>
+    for (string <- """(\d*\.\d+|\.\d+)""".r.findAllIn(source.mkString)) println("7. " + string)
+  }
+
+  //TODO exercise 8
+
+  def countClass(dir: File): Int = {
+    dir.listFiles().filter(_.getName.endsWith(".class")).size + subdirs(dir).map(f => countClass(f)).sum
+  }
+  def subdirs(dir: File): Array[File] = {
+    val children = dir.listFiles.filter(_.isDirectory)
+    children ++ children.flatMap(subdirs(_))
+  }
+  println("9. Class counter = " + countClass(new File("out")))
+
+  import scala.Serializable
+  class Person(val name: String) extends Serializable {
+    private var friends = Array[Person]()
+    def addFriends(person: Person*) {
+      friends = friends ++ person
+    }
+
+    override def toString: String = {
+      val friendsString = if (friends.size > 0) "Friends = " + friends.mkString("{",",","}") else ""
+      s"Name= $name $friendsString"
+    }
+  }
+  val person1 = new Person("Luis")
+  val person2 = new Person("Fernando")
+  val person3 = new Person("Jose")
+  val person4 = new Person("Carlos")
+  val person5 = new Person("Jesus")
+  person5.addFriends(person1, person2, person3,person4)
+  using (new ObjectOutputStream(new FileOutputStream("/tmp/test.obj"))) {
+    out => out.writeObject(person5)
+  }
+  val in = new ObjectInputStream(new FileInputStream("/tmp/test.obj"))
+  println("10. " + in.readObject().asInstanceOf[Person])
+
+
+  // From the book, Beginning Scala, by David Pollak.
+  def using[A <: { def close() }, B](closable: A)(body: A => B): B = try body(closable) finally closable.close()
+
   def newWriter: PrintWriter = {
     new PrintWriter("resources/output.txt")
   }
@@ -67,8 +115,7 @@ object Files extends App{
   def printOutput(exercise: Int) {
     outputSource = Source.fromFile("resources/output.txt")
     output = outputSource.getLines().toList
-    print(s"$exercise. ")
-    output.foreach(println(_))
+    output.foreach(s => println(s"$exercise. $s"))
   }
 
 }
